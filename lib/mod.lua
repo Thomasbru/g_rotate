@@ -13,14 +13,23 @@ local device_id = 2
 
 local m = {}
 
-local m.grid_connect = grid.connect
+local old_grid_connect = grid.connect
+
 function grid.connect(d)
   if d == nil then
     d = 1
   end
-  m.grid_connect(d)
+  local g = old_grid_connect(d)
   device_id = d + 1
-  grid.rotation(grid.device[device_id], rotation)
+  grid.rotation(grid.devices[device_id], rotation)
+  grid.refresh(grid.devices[device_id])
+  return g
+end
+
+local old_refresh = grid.refresh
+
+function grid.refresh(d)
+  old_refresh(d)
 end
 
 
@@ -34,6 +43,8 @@ end
 m.enc = function(n, d)
   if n == 3 then
     rotation = util.clamp(rotation + d, 0, 3)
+    grid.rotation(grid.devices[device_id], rotation)
+    grid.refresh(grid.devices[device_id])
   end
   m.redraw()
 end
@@ -56,7 +67,7 @@ end -- on menu exit
 -- of the mod which is being loaded. in order for the menu to work it must be
 -- registered with a name which matches the name of the mod in the dust folder.
 --
-mod.menu.register(mod.g_rotate, m)
+mod.menu.register(mod.this_name, m)
 
 
 --
